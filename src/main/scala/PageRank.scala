@@ -48,7 +48,9 @@ object PageRank {
         }
 
         // 10,000 "walkers", and what webpage they ended up
-        val endingWebpages = for (i <- 0 until 10000) yield helper(100, corpus(random.nextInt(corpus.length)))
+        // val endingWebpages = for (i <- 0 until 10000) yield helper(100, corpus(random.nextInt(corpus.length)))
+        val startingWebpages = (for(i <- 0 until 10000) yield corpus(random.nextInt(corpus.length))).toList
+        val endingWebpages = startingWebpages.par.map(helper(100, _))
 
         // Transform list of ending sites to a count of endings
         val unNormalizedScores: Map[String, Int] = (for (i <- corpus) yield i.id -> endingWebpages.count(_ == i)).toMap

@@ -36,18 +36,21 @@ object PageSearch {
      * @return      a list of the TF-IDF score for each page in the same order given
      */
     def tfidf(pages: List[RankedWebPage], query: List[String]): List[Double] = {
-        for (i <- pages) yield getTfIDF(i, query, pages)
+        //for (i <- pages) yield getTfIDF(i, query, pages)
+        pages.par.map(getTfIDF(_, query, pages)).seq.toList
     }
 
     def getTfIDF(page: RankedWebPage, query: List[String], pages: List[RankedWebPage]): Double = {
         //println(page.url)
         val tfTerm = for(i <- query) yield getIndvCountTf(page, i) // get ind tf
+        //val tfTerm = query.par.map(getIndvCountTf(page, _)).seq.toList
         //print("tf:")
         //println(tfTerm)
-        val corpusTerm = for (i <- query) yield indTermInCorpus(pages.filter(_.id != page.id), i) // get how ofter its in other docs
+        val corpusTerm = for (i <- query) yield indTermInCorpus(pages.par.filter(_.id != page.id).seq.toList, i) // get how ofter its in other docs
         //print("ct:")
         //println(corpusTerm)
         val idfs = for (i <- 0 until tfTerm.length) yield calcIDF(tfTerm(i), corpusTerm(i), pages.length)
+        //val idfs = tfTerm.zipWithIndex.par.map {case (element, index) => calcIDF(tfTerm(index), corpusTerm(index), pages.length)}
         //print("idf")
         //println(idfs)
         idfs.foldLeft(1.0)(_ * _)

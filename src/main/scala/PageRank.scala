@@ -35,6 +35,27 @@ object PageRank {
     }
 
     def pagerank(pages: Map[String, WebPage]): Map[String, Double] = {
-        Map()
+        val corpus: List[WebPage] = pages.values.toList
+        val random: Random = new Random()
+
+        // for each random walk we are going to recursively travel 100 times
+        def helper(n: Int, webPage: WebPage): WebPage = {
+            println(webPage.links.length)
+            if (n == 0) return webPage
+
+            val dampFactorValue = random.nextInt(100)
+
+            if dampFactorValue <= 85 && webPage.links.length > 0 then helper(n-1, pages(webPage.links(random.nextInt(webPage.links.length)))) else helper(n-1, corpus(random.nextInt(corpus.length)))
+        }
+
+        // 10,000 "walkers", and what webpage they ended up
+        val endingWebpages = for (i <- 0 until 10000) yield helper(100, corpus(random.nextInt(corpus.length)))
+
+        // Transform list of ending sites to a count of endings
+        val unNormalizedScores: Map[String, Int] = (for (i <- corpus) yield i.id -> endingWebpages.count(_ == i)).toMap
+
+        val normalizedScores: Map[String, Double] = for (i <- unNormalizedScores) yield i._1 -> (i._2 + 1.0)/(10000.0 + corpus.length)
+
+        normalizedScores
     }
 }

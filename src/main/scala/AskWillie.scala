@@ -30,7 +30,7 @@ import scala.util.Sorting
             terms != List(":quit")
         } do {
           // TODO: Measure the textual match of each page to these terms using one of the functions in PageSearch
-          val searchedPages: List[SearchedWebPage] = PageSearch.count(rankedPages, terms).zip(rankedPages).toMap.map((k, v) => new SearchedWebPage(v, k)).toList // call PageSearch.???? here
+          val searchedPages: List[SearchedWebPage] = PageSearch.tfidf(rankedPages, terms).zip(rankedPages).toMap.map((k, v) => new SearchedWebPage(v, k)).toList // call PageSearch.???? here
           // normalize the ranges for weight and textmatch on these pages
           val pageArray = SearchedWebPageNormalize.normalize(searchedPages).toArray
           // sort this array based on the chosen averaging scheme i.e.

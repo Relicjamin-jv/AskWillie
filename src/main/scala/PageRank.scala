@@ -40,7 +40,6 @@ object PageRank {
 
         // for each random walk we are going to recursively travel 100 times
         def helper(n: Int, webPage: WebPage): WebPage = {
-            println(webPage.links.length)
             if (n == 0) return webPage
 
             val dampFactorValue = random.nextInt(100)

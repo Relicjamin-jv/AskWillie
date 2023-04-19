@@ -26,7 +26,8 @@ object PageSearch {
      * @return      a list of the term-frequency of the occurrences of those terms in each page in the same order given
      */
     def tf(pages: List[RankedWebPage], query: List[String]): List[Double] = {
-        List() // TODO: implement this method and remove this stub
+        val countWords = count(pages, query)
+        (for (i <- 0 until pages.length) yield countWords(i)/pages(i).text.split(' ').toList.length).toList
     }
 
     /**
@@ -35,6 +36,17 @@ object PageSearch {
      * @return      a list of the TF-IDF score for each page in the same order given
      */
     def tfidf(pages: List[RankedWebPage], query: List[String]): List[Double] = {
-        List() // TODO: implement this method and remove this stub
+        val numberOfDocuments: Double = pages.length // N
+        val corpusContainWordCount: Double = (for (i <- pages; if documentContainsWord(i, query)) yield 1).length + 1 // D + 1
+        print(corpusContainWordCount)
+        val termFreqList: List[Double] = tf(pages, query)
+        val inverseDocumentFrequency: Double = math.log(numberOfDocuments / corpusContainWordCount)
+        for (i <- termFreqList) yield i * inverseDocumentFrequency
     }
+
+    def documentContainsWord(page: RankedWebPage, query: List[String]): Boolean = {
+        for (i <- page.text.split(' ')) if query.contains(i) then return true
+        false
+    }
+
 }

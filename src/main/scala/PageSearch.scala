@@ -36,17 +36,42 @@ object PageSearch {
      * @return      a list of the TF-IDF score for each page in the same order given
      */
     def tfidf(pages: List[RankedWebPage], query: List[String]): List[Double] = {
-        val numberOfDocuments: Double = pages.length // N
-        val corpusContainWordCount: Double = (for (i <- pages; if documentContainsWord(i, query)) yield 1).length + 1 // D + 1
-        print(corpusContainWordCount)
-        val termFreqList: List[Double] = tf(pages, query)
-        val inverseDocumentFrequency: Double = math.log(numberOfDocuments / corpusContainWordCount)
-        for (i <- termFreqList) yield i * inverseDocumentFrequency
+        for (i <- pages) yield getTfIDF(i, query, pages)
     }
 
-    def documentContainsWord(page: RankedWebPage, query: List[String]): Boolean = {
-        for (i <- page.text.split(' ')) if query.contains(i) then return true
-        false
+    def getTfIDF(page: RankedWebPage, query: List[String], pages: List[RankedWebPage]): Double = {
+        //println(page.url)
+        val tfTerm = for(i <- query) yield getIndvCountTf(page, i) // get ind tf
+        //print("tf:")
+        //println(tfTerm)
+        val corpusTerm = for (i <- query) yield indTermInCorpus(pages.filter(_.id != page.id), i) // get how ofter its in other docs
+        //print("ct:")
+        //println(corpusTerm)
+        val idfs = for (i <- 0 until tfTerm.length) yield calcIDF(tfTerm(i), corpusTerm(i), pages.length)
+        //print("idf")
+        //println(idfs)
+        idfs.foldLeft(1.0)(_ * _)
     }
 
+    def calcIDF(tf: Double, df: Double, N: Double): Double = {
+        tf * math.log(N/df+1)
+    }
+
+    def indTermInCorpus(pages: List[RankedWebPage], temp: String): Double = {
+        (for (i <- pages; if i.text.split(' ').contains(temp)) yield 1).length
+    }
+
+    def getIndvCountTf(page: RankedWebPage, term: String): Double = {
+        val text = page.text.split(' ')
+        val textLength: Double = text.length
+        text.count(_.toLowerCase() == term.toLowerCase())/textLength
+    }
+}
+
+@main def testGetInd():Unit ={
+    val text = "hello there t t t t t".split(' ')
+    println(text.toList)
+    val textLength: Double = text.length
+    val textCount: Double = text.count(_.toLowerCase() == "t".toLowerCase())/textLength
+    print(textCount)
 }
